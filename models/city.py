@@ -1,19 +1,30 @@
 #!/usr/bin/python3
-""" City Module for HBNB project """
+"""This is the city class"""
 from models.base_model import BaseModel, Base
-from models import storage_type
-from sqlalchemy import Column, String, ForeignKey
+from sqlalchemy import Column, String, ForeignKey, Integer
 from sqlalchemy.orm import relationship
+from os import environ
+from uuid import uuid4
 
-
-class City(BaseModel, Base):
-    """ The city class, contains state ID and name """
-    __tablename__ = 'cities'
-    if storage_type == 'db':
-        name = Column(String(128), nullable=False)
+s = "HBNB_TYPE_STORAGE"
+if s in environ.keys() and environ["HBNB_TYPE_STORAGE"] == "db":
+    class City(BaseModel, Base):
+        '''
+        This is the class for City Attributes
+        '''
+        __tablename__ = "cities"
         state_id = Column(String(60), ForeignKey('states.id'), nullable=False)
-        places = relationship('Place', backref='cities',
-                              cascade='all, delete, delete-orphan')
-    else:
-        name = ''
-        state_id = ''
+        name = Column(String(128), nullable=False)
+        places = relationship("Place", backref="cities", cascade="all,delete")
+
+        def __init__(self, **kwargs):
+            setattr(self, "id", str(uuid4()))
+            for i, j in kwargs.items():
+                setattr(self, i, j)
+else:
+    class City(BaseModel):
+        '''
+        This is the class for City
+        '''
+        state_id = ""
+        name = ""
