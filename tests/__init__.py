@@ -34,8 +34,8 @@ def reset_store(store: FileStorage, file_path='file.json'):
     """
     with open(file_path, mode='w') as file:
         file.write('{}')
-        if store is not None:
-            store.reload()
+    if store is not None:
+        store.reload()
 
 
 def read_text_file(file_name):

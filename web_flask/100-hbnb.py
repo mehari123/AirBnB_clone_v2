@@ -1,45 +1,45 @@
 #!/usr/bin/python3
-""" A script that starts a flask web application """
+'''A simple Flask web application.
+'''
+from flask import Flask, render_template, Markup
+
 from models import storage
-from models.state import State
-from models.city import City
 from models.amenity import Amenity
 from models.place import Place
-from os import environ
-from flask import Flask, render_template
+from models.state import State
+
+
 app = Flask(__name__)
-# app.jinja_env.trim_blocks = True
-# app.jinja_env.lstrip_blocks = True
+'''The Flask application instance.'''
+app.url_map.strict_slashes = False
+
+
+@app.route('/hbnb')
+def hbnb():
+    '''The hbnb page.'''
+    all_states = list(storage.all(State).values())
+    amenities = list(storage.all(Amenity).values())
+    places = list(storage.all(Place).values())
+    all_states.sort(key=lambda x: x.name)
+    amenities.sort(key=lambda x: x.name)
+    places.sort(key=lambda x: x.name)
+    for state in all_states:
+        state.cities.sort(key=lambda x: x.name)
+    for place in places:
+        place.description = Markup(place.description)
+    ctxt = {
+        'states': all_states,
+        'amenities': amenities,
+        'places': places
+    }
+    return render_template('100-hbnb.html', **ctxt)
 
 
 @app.teardown_appcontext
-def close_db(error):
-    """ Remove the current SQLAlchemy Session """
+def flask_teardown(exc):
+    '''The Flask app/request context end event listener.'''
     storage.close()
 
 
-@app.route('/hbnb', strict_slashes=False)
-def hbnb():
-    """ HBNB is alive! """
-    states = storage.all(State).values()
-    states = sorted(states, key=lambda k: k.name)
-    st_ct = []
-
-    for state in states:
-        st_ct.append([state, sorted(state.cities, key=lambda k: k.name)])
-
-    amenities = storage.all(Amenity).values()
-    amenities = sorted(amenities, key=lambda k: k.name)
-
-    places = storage.all(Place).values()
-    places = sorted(places, key=lambda k: k.name)
-
-    return render_template('100-hbnb.html',
-                           states=st_ct,
-                           amenities=amenities,
-                           places=places)
-
-
-if __name__ == "__main__":
-    """ Main Function """
-    app.run(host='0.0.0.0', port=5000)
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port='5000')
